@@ -1,0 +1,81 @@
+body {
+  font: 14px "Century Gothic", Futura, sans-serif;
+  margin: 20px;
+}
+
+ol,
+ul {
+  padding-left: 30px;
+}
+
+.board-row:after {
+  clear: both;
+  content: "";
+  display: table;
+}
+
+.status {
+  margin-bottom: 10px;
+}
+
+.square {
+  background: #fff;
+  border: 1px solid #999;
+  float: left;
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 34px;
+  height: 34px;
+  margin-right: -1px;
+  margin-top: -1px;
+  padding: 0;
+  text-align: center;
+  width: 34px;
+}
+.blink {
+  -webkit-animation: glowing 2000ms infinite;
+}
+.blink_red {
+  -webkit-animation: glowing_red 500ms infinite;
+}
+
+.square:focus {
+  outline: none;
+}
+
+.kbd-navigation .square:focus {
+  background: #ddd;
+}
+
+.game {
+  display: flex;
+  flex-direction: row;
+}
+
+.game-info {
+  margin-left: 20px;
+}
+
+@-webkit-keyframes glowing {
+  0% {
+    background-color: rgb(0, 178, 80);
+    -webkit-box-shadow: 0 0 1px #b20000;
+  }
+  50% {
+    background-color: rgb(0, 255, 13);
+    -webkit-box-shadow: 0 0 1px #ff0000;
+  }
+  /* 100% { background-color: #B20000; -webkit-box-shadow: 0 0 3px #B20000; } */
+}
+
+@-webkit-keyframes glowing_red {
+  0% {
+    background-color: rgb(255, 17, 0);
+    -webkit-box-shadow: 0 0 1px #b20000;
+  }
+  50% {
+    background-color: rgb(255, 17, 0);
+    -webkit-box-shadow: 0 0 1px #ff0000;
+  }
+  /* 100% { background-color: #B20000; -webkit-box-shadow: 0 0 3px #B20000; } */
+}
