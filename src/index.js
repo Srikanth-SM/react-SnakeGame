@@ -214,4 +214,10 @@ class Game extends React.Component {
 
 // ========================================
 
-ReactDOM.render(<Game />, document.getElementById("root"));
+ReactDOM.render(
+  <div>
+    <h3>Welcome to the Game of Snake.</h3>
+    <Game />
+  </div>,
+  document.getElementById("root")
+);
