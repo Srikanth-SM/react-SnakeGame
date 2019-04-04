@@ -33,7 +33,8 @@ ul {
   width: 34px;
 }
 .blink {
-  -webkit-animation: glowing 2000ms infinite;
+  /* -webkit-animation: glowing 1000ms infinite; */
+  background: green;
 }
 .blink_red {
   -webkit-animation: glowing_red 500ms infinite;
