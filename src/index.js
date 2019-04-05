@@ -4,7 +4,7 @@ import "./index.css";
 
 import Square from "./square";
 
-const size = 10;
+const size = 4;
 
 class Pair {
   constructor(x, y) {
@@ -45,6 +45,7 @@ class Game extends React.Component {
       j = Math.floor(Math.random() * size);
       squares[i][j] = 2;
     } while (i === 0 && j === 0);
+    console.log("setting state")
     this.setState({ squares: squares, randomX: i, randomY: j });
   };
 
@@ -114,7 +115,7 @@ class Game extends React.Component {
         prevState => {
           const squares = this.state.squares.slice();
           squares[prevX][prevY] = 0;
-          return { Y: prevState.Y - 1, squares: squares };
+          return { Y: prevState.Y - 1 };
         },
         () => {
           this.progressGame(prevX, prevY);
@@ -134,7 +135,7 @@ class Game extends React.Component {
         prevState => {
           const squares = this.state.squares.slice();
           squares[prevX][prevY] = 0;
-          return { X: prevState.X - 1, squares: squares };
+          return { X: prevState.X - 1 };
         },
         () => {
           this.progressGame(prevX, prevY);
@@ -157,6 +158,7 @@ class Game extends React.Component {
   createRandomDot = (squares, setPath) => {
     let isPairInSetPath = true;
     // setPath = setPath;
+    // console.log(setPath);
     let i, j;
     while (true) {
       i = Math.floor(Math.random() * size);
@@ -167,6 +169,7 @@ class Game extends React.Component {
       }
       break;
     }
+    console.log(i,j,setPath)
     return [i, j];
   };
 
@@ -194,14 +197,22 @@ class Game extends React.Component {
     let values = this.fillSquares(path, X);
     squares = values[0];
     setPath = values[1];
-    if (toGenerateRandomPoint)
+    if (toGenerateRandomPoint) {
+      console.log("create random dot");
       randValues = this.createRandomDot(squares, setPath);
+      console.log("exit create random dot");
+    }
+    console.log("after createRandomDot");
     let randomX, randomY;
     if (randValues && randValues.length > 0) {
       randomX = randValues[0];
       randomY = randValues[1];
+      
       squares[randomX][randomY] = 2;
+      this.setState({squares:squares,randomX:randomX,randomY:randomY})
     }
+    console.log("random", randomX, randomY, this.state.randomX, this.state.randomY);
+    console.log("setting state")
     this.setState(prevState => {
       return {
         squares: squares,
