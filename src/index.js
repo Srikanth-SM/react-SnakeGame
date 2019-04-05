@@ -31,7 +31,8 @@ class Game extends React.Component {
       X: 0,
       Y: 0,
       path: [new Pair(0, 0)],
-      setPath: { "00": 1 }
+      setPath: { "00": 1 },
+      isGameActive: true
     };
   }
 
@@ -52,18 +53,27 @@ class Game extends React.Component {
   }
 
   boundaryIsValid = (key, val) => {
-    return (
+    const isInsideBoundary =
       this.state[key] + val >= 0 &&
       this.state[key] + val >= 0 &&
       this.state[key] + val < size &&
-      this.state[key] + val < size
-    );
+      this.state[key] + val < size;
+    !isInsideBoundary &&
+      this.setState({ isGameActive: false }, () => {
+        alert("GameOver");
+        window.location.reload();
+      });
+    return isInsideBoundary;
   };
 
   moveRight = () => {
     const prevX = this.state.X;
     const prevY = this.state.Y;
-    this.boundaryIsValid("Y", 1) &&
+    const nextY = prevY + 1;
+    const nextX = prevX;
+
+    !this.isGameOver(nextX, nextY) &&
+      this.boundaryIsValid("Y", 1) &&
       this.setState(
         prevState => {
           return { Y: prevState.Y + 1 };
@@ -77,7 +87,11 @@ class Game extends React.Component {
   moveDown = () => {
     const prevX = this.state.X;
     const prevY = this.state.Y;
-    this.boundaryIsValid("X", 1) &&
+    const nextY = prevY;
+    const nextX = prevX + 1;
+
+    !this.isGameOver(nextX, nextY) &&
+      this.boundaryIsValid("X", 1) &&
       this.setState(
         prevState => {
           return { X: prevState.X + 1 };
@@ -91,7 +105,11 @@ class Game extends React.Component {
   moveLeft = () => {
     const prevX = this.state.X;
     const prevY = this.state.Y;
-    this.boundaryIsValid("Y", -1) &&
+    const nextY = prevY - 1;
+    const nextX = prevX;
+
+    !this.isGameOver(nextX, nextY) &&
+      this.boundaryIsValid("Y", -1) &&
       this.setState(
         prevState => {
           const squares = this.state.squares.slice();
@@ -107,7 +125,11 @@ class Game extends React.Component {
   moveTop = () => {
     const prevX = this.state.X;
     const prevY = this.state.Y;
-    this.boundaryIsValid("X", -1) &&
+    const nextY = prevY;
+    const nextX = prevX - 1;
+
+    !this.isGameOver(nextX, nextY) &&
+      this.boundaryIsValid("X", -1) &&
       this.setState(
         prevState => {
           const squares = this.state.squares.slice();
@@ -125,22 +147,25 @@ class Game extends React.Component {
     const setPath = {};
     squares[this.state.randomX][this.state.randomY] = 2;
     for (let pair of path) {
-      setPath["" + pair.X + pair.Y] = 1;
+      setPath[pair.X.toString() + pair.Y.toString()] = 1;
       squares[pair.X][pair.Y] = 1;
+      // setPath["" + pair.X + pair.Y] = 1;
     }
-    return squares;
+    return [squares, setPath];
   };
 
   createRandomDot = (squares, setPath) => {
     let isPairInSetPath = true;
+    // setPath = setPath;
     let i, j;
-    while (isPairInSetPath) {
+    while (true) {
       i = Math.floor(Math.random() * size);
       j = Math.floor(Math.random() * size);
-      let key = "" + i + j;
-      if (!(key in setPath)) {
-        isPairInSetPath = false;
+      let key = i.toString() + j.toString();
+      if (key in setPath) {
+        continue;
       }
+      break;
     }
     return [i, j];
   };
@@ -151,21 +176,26 @@ class Game extends React.Component {
     let setPath = this.state.setPath || {};
     const { X, Y } = this.state;
     const pair = new Pair(X, Y);
-    let randValues;
+    let randValues,
+      toGenerateRandomPoint = false;
     if (squares[X][Y] === 0) {
       squares[prevX][prevY] = 0;
       let tempPair = path && path.length > 0 && path[path.length - 1];
-      let key = tempPair && "" + tempPair.X + tempPair.Y;
-      key in setPath && delete setPath[key];
+      let key = tempPair && +tempPair.X.toString() + tempPair.Y.toString();
+      // key in setPath && delete setPath[key];
       path.pop();
       path.unshift(pair);
-      setPath["" + X + Y] = 1;
+      // setPath["" + X + Y] = 1;
     } else if (squares[X][Y] === 2) {
       path.unshift(pair);
-      setPath["" + X + Y] = 1;
-      randValues = this.createRandomDot(squares, setPath);
+      toGenerateRandomPoint = true;
+      // setPath["" + X + Y] = 1;
     }
-    squares = this.fillSquares(path, X);
+    let values = this.fillSquares(path, X);
+    squares = values[0];
+    setPath = values[1];
+    if (toGenerateRandomPoint)
+      randValues = this.createRandomDot(squares, setPath);
     let randomX, randomY;
     if (randValues && randValues.length > 0) {
       randomX = randValues[0];
@@ -181,6 +211,10 @@ class Game extends React.Component {
         randomY: randomY || prevState.randomY
       };
     });
+  };
+
+  isGameOver = (nextX, nextY) => {
+    return "" + nextX + nextY in this.state.setPath;
   };
 
   render() {
@@ -205,9 +239,19 @@ class Game extends React.Component {
           />
         );
       });
-      return <div className="board-row">{temp}</div>;
+      return (
+        <div
+          className="board-row"
+          style={
+            !this.state.isGameActive
+              ? { pointerEvents: "none", opacity: "0.5" }
+              : {}
+          }
+        >
+          {temp}
+        </div>
+      );
     });
-
     return htmlSquares;
   }
 }
