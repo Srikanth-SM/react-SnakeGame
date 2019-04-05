@@ -131,8 +131,7 @@ class Game extends React.Component {
     return squares;
   };
 
-  createRandomDot = squares => {
-    const setPath = this.state.setPath;
+  createRandomDot = (squares, setPath) => {
     let isPairInSetPath = true;
     let i, j;
     while (isPairInSetPath) {
@@ -141,7 +140,6 @@ class Game extends React.Component {
       let key = "" + i + j;
       if (!(key in setPath)) {
         isPairInSetPath = false;
-        setPath[key] = 1;
       }
     }
     return [i, j];
@@ -156,14 +154,16 @@ class Game extends React.Component {
     let randValues;
     if (squares[X][Y] === 0) {
       squares[prevX][prevY] = 0;
+      let tempPair = path && path.length > 0 && path[path.length - 1];
+      let key = tempPair && "" + tempPair.X + tempPair.Y;
+      key in setPath && delete setPath[key];
       path.pop();
-      let key = "" + prevX + prevY;
-      key in setPath && delete setPath["" + prevX + prevY];
       path.unshift(pair);
+      setPath["" + X + Y] = 1;
     } else if (squares[X][Y] === 2) {
       path.unshift(pair);
       setPath["" + X + Y] = 1;
-      randValues = this.createRandomDot();
+      randValues = this.createRandomDot(squares, setPath);
     }
     squares = this.fillSquares(path, X);
     let randomX, randomY;
