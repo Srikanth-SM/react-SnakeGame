@@ -78,5 +78,25 @@ ul {
     background-color: rgb(255, 17, 0);
     -webkit-box-shadow: 0 0 1px #ff0000;
   }
-  /* 100% { background-color: #B20000; -webkit-box-shadow: 0 0 3px #B20000; } */
+}
+/* 100% { background-color: #B20000; -webkit-box-shadow: 0 0 3px #B20000; } */
+.Modal {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  right: 40px;
+  bottom: 40px;
+  /*     background-color: papayawhip; */
+}
+
+.Overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100px;
+  height: 200px;
+  opacity: 0.2;
+  /*     background-color: rebeccapurple; */
 }

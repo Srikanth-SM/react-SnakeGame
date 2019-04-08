@@ -4,7 +4,7 @@ import "./index.css";
 
 import Square from "./square";
 
-const size = 4;
+const size = 3;
 
 class Pair {
   constructor(x, y) {
@@ -22,7 +22,7 @@ function initialiseBoard() {
   return matrix;
 }
 
-class Game extends React.Component {
+class Board extends React.Component {
   constructor(props) {
     let matrix = initialiseBoard();
     super(props);
@@ -43,9 +43,9 @@ class Game extends React.Component {
     do {
       i = Math.floor(Math.random() * size);
       j = Math.floor(Math.random() * size);
-      squares[i][j] = 2;
+      // if(i!=0 && j!=0)
+      if (i !== 0 || j !== 0) squares[i][j] = 2;
     } while (i === 0 && j === 0);
-    console.log("setting state")
     this.setState({ squares: squares, randomX: i, randomY: j });
   };
 
@@ -53,16 +53,31 @@ class Game extends React.Component {
     this.initializeGame();
   }
 
+  componentDidMount() {
+    window.addEventListener("load", event => {
+      document.getElementsByTagName("button")[0].focus();
+    });
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.timeout);
+  }
+
   boundaryIsValid = (key, val) => {
     const isInsideBoundary =
       this.state[key] + val >= 0 &&
       this.state[key] + val >= 0 &&
       this.state[key] + val < size &&
-      this.state[key] + val < size;
+      this.state[key] + val < size &&
+      this.state.path.length < size * size;
     !isInsideBoundary &&
       this.setState({ isGameActive: false }, () => {
-        alert("GameOver");
-        window.location.reload();
+        let status = {
+          isGameActive: this.state.isGameActive,
+          message: "Player Lost"
+        };
+        this.props.isGameActive(status);
+        this.timeout = setTimeout(()=>window.location.reload(), 5000);
       });
     return isInsideBoundary;
   };
@@ -72,17 +87,19 @@ class Game extends React.Component {
     const prevY = this.state.Y;
     const nextY = prevY + 1;
     const nextX = prevX;
-
-    !this.isGameOver(nextX, nextY) &&
+    if (!this.isGameOver(nextX, nextY)) {
       this.boundaryIsValid("Y", 1) &&
-      this.setState(
-        prevState => {
-          return { Y: prevState.Y + 1 };
-        },
-        () => {
-          this.progressGame(prevX, prevY);
-        }
-      );
+        this.setState(
+          prevState => {
+            return { Y: prevState.Y + 1 };
+          },
+          () => {
+            this.progressGame(prevX, prevY);
+          }
+        );
+    } else {
+      return this.changeGameState();
+    }
   };
 
   moveDown = () => {
@@ -91,16 +108,19 @@ class Game extends React.Component {
     const nextY = prevY;
     const nextX = prevX + 1;
 
-    !this.isGameOver(nextX, nextY) &&
+    if (!this.isGameOver(nextX, nextY)) {
       this.boundaryIsValid("X", 1) &&
-      this.setState(
-        prevState => {
-          return { X: prevState.X + 1 };
-        },
-        () => {
-          this.progressGame(prevX, prevY);
-        }
-      );
+        this.setState(
+          prevState => {
+            return { X: prevState.X + 1 };
+          },
+          () => {
+            this.progressGame(prevX, prevY);
+          }
+        );
+    } else {
+      return this.changeGameState();
+    }
   };
 
   moveLeft = () => {
@@ -108,19 +128,21 @@ class Game extends React.Component {
     const prevY = this.state.Y;
     const nextY = prevY - 1;
     const nextX = prevX;
-
-    !this.isGameOver(nextX, nextY) &&
+    if (!this.isGameOver(nextX, nextY)) {
       this.boundaryIsValid("Y", -1) &&
-      this.setState(
-        prevState => {
-          const squares = this.state.squares.slice();
-          squares[prevX][prevY] = 0;
-          return { Y: prevState.Y - 1 };
-        },
-        () => {
-          this.progressGame(prevX, prevY);
-        }
-      );
+        this.setState(
+          prevState => {
+            const squares = this.state.squares.slice();
+            squares[prevX][prevY] = 0;
+            return { Y: prevState.Y - 1 };
+          },
+          () => {
+            this.progressGame(prevX, prevY);
+          }
+        );
+    } else {
+      return this.changeGameState();
+    }
   };
 
   moveTop = () => {
@@ -128,37 +150,57 @@ class Game extends React.Component {
     const prevY = this.state.Y;
     const nextY = prevY;
     const nextX = prevX - 1;
-
-    !this.isGameOver(nextX, nextY) &&
+    if (!this.isGameOver(nextX, nextY)) {
       this.boundaryIsValid("X", -1) &&
-      this.setState(
-        prevState => {
-          const squares = this.state.squares.slice();
-          squares[prevX][prevY] = 0;
-          return { X: prevState.X - 1 };
-        },
-        () => {
-          this.progressGame(prevX, prevY);
-        }
-      );
+        this.setState(
+          prevState => {
+            const squares = this.state.squares.slice();
+            squares[prevX][prevY] = 0;
+            return { X: prevState.X - 1 };
+          },
+          () => {
+            this.progressGame(prevX, prevY);
+          }
+        );
+    } else {
+      return this.changeGameState();
+    }
   };
 
-  fillSquares = (path, X) => {
+  fillSquares = (path, X, toGenerateRandomPoint) => {
     const squares = initialiseBoard();
     const setPath = {};
     squares[this.state.randomX][this.state.randomY] = 2;
     for (let pair of path) {
       setPath[pair.X.toString() + pair.Y.toString()] = 1;
       squares[pair.X][pair.Y] = 1;
-      // setPath["" + pair.X + pair.Y] = 1;
     }
-    return [squares, setPath];
+    let isGameActive = true;
+    if (Object.keys(setPath).length === size * size) isGameActive = false;
+    return this.setState({ squares, setPath, path, isGameActive }, () => {
+      if (!isGameActive) {
+        let status = {
+          isGameActive: this.state.isGameActive,
+          message: "Player won"
+        };
+        this.props.isGameActive(status);
+        this.timeout = setTimeout(() => window.location.reload(), 5000);
+        return;
+      }
+      if (toGenerateRandomPoint) {
+        return this.createRandomDot(
+          this.state.squares,
+          this.state.setPath,
+          () => {
+            return;
+          }
+        );
+      }
+    });
   };
 
-  createRandomDot = (squares, setPath) => {
-    let isPairInSetPath = true;
-    // setPath = setPath;
-    // console.log(setPath);
+  createRandomDot = (squares, setPath, cb) => {
+    squares = this.state.squares;
     let i, j;
     while (true) {
       i = Math.floor(Math.random() * size);
@@ -169,64 +211,42 @@ class Game extends React.Component {
       }
       break;
     }
-    console.log(i,j,setPath)
-    return [i, j];
+    squares[i][j] = 2;
+    return this.setState({ squares, randomX: i, randomY: j }, () => {
+      return cb();
+    });
   };
 
   progressGame = (prevX, prevY) => {
     let squares = this.state.squares.slice();
     let path = this.state.path.slice() || [];
-    let setPath = this.state.setPath || {};
     const { X, Y } = this.state;
     const pair = new Pair(X, Y);
-    let randValues,
-      toGenerateRandomPoint = false;
+    let toGenerateRandomPoint = false;
     if (squares[X][Y] === 0) {
-      squares[prevX][prevY] = 0;
-      let tempPair = path && path.length > 0 && path[path.length - 1];
-      let key = tempPair && +tempPair.X.toString() + tempPair.Y.toString();
-      // key in setPath && delete setPath[key];
       path.pop();
       path.unshift(pair);
-      // setPath["" + X + Y] = 1;
     } else if (squares[X][Y] === 2) {
       path.unshift(pair);
       toGenerateRandomPoint = true;
-      // setPath["" + X + Y] = 1;
     }
-    let values = this.fillSquares(path, X);
-    squares = values[0];
-    setPath = values[1];
-    if (toGenerateRandomPoint) {
-      console.log("create random dot");
-      randValues = this.createRandomDot(squares, setPath);
-      console.log("exit create random dot");
-    }
-    console.log("after createRandomDot");
-    let randomX, randomY;
-    if (randValues && randValues.length > 0) {
-      randomX = randValues[0];
-      randomY = randValues[1];
-      
-      squares[randomX][randomY] = 2;
-      this.setState({squares:squares,randomX:randomX,randomY:randomY})
-    }
-    console.log("random", randomX, randomY, this.state.randomX, this.state.randomY);
-    console.log("setting state")
-    this.setState(prevState => {
-      return {
-        squares: squares,
-        setPath: setPath,
-        path: path,
-        randomX: randomX || prevState.randomX,
-        randomY: randomY || prevState.randomY
-      };
-    });
+    this.fillSquares(path, X, toGenerateRandomPoint);
   };
 
   isGameOver = (nextX, nextY) => {
     return "" + nextX + nextY in this.state.setPath;
   };
+
+  changeGameState = ()=> {
+    return this.setState({ isGameActive: false }, () => {
+      let status = {
+        isGameActive: this.state.isGameActive,
+        message: "Player Lost"
+      };
+      this.props.isGameActive(status);
+      this.timeout = setTimeout(() => window.location.reload(), 5000);
+    });
+  }
 
   render() {
     const squares = this.state.squares;
@@ -264,6 +284,25 @@ class Game extends React.Component {
       );
     });
     return htmlSquares;
+  }
+}
+class Game extends React.Component {
+  state = {
+    isGameActive: true,
+    message: "playerLost"
+  };
+  isGameActive = ({ isGameActive, message }) => {
+    this.setState({ isGameActive, message });
+  };
+  render() {
+    return (
+      <div>
+        <Board isGameActive={this.isGameActive} />
+        <div style={{ display: !this.state.isGameActive ? "inline" : "None" }}>
+          Game over, {this.state.message}
+        </div>
+      </div>
+    );
   }
 }
 
