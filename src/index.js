@@ -77,7 +77,7 @@ class Board extends React.Component {
           message: "Player Lost"
         };
         this.props.isGameActive(status);
-        this.timeout = setTimeout(()=>window.location.reload(), 5000);
+        this.timeout = setTimeout(() => window.location.reload(), 5000);
       });
     return isInsideBoundary;
   };
@@ -177,30 +177,34 @@ class Board extends React.Component {
     }
     let isGameActive = true;
     if (Object.keys(setPath).length === size * size) isGameActive = false;
-    return this.setState({ squares, setPath, path, isGameActive }, () => {
-      if (!isGameActive) {
-        let status = {
-          isGameActive: this.state.isGameActive,
-          message: "Player won"
-        };
-        this.props.isGameActive(status);
-        this.timeout = setTimeout(() => window.location.reload(), 5000);
-        return;
-      }
-      if (toGenerateRandomPoint) {
-        return this.createRandomDot(
-          this.state.squares,
-          this.state.setPath,
-          () => {
-            return;
-          }
-        );
-      }
+    this.setState(prevState => {
+      return {
+        squares,
+        path,
+        setPath,
+        isGameActive
+      };
     });
+    // return this.setState({ squares, setPath, path, isGameActive }, () => {
+    if (!isGameActive) {
+      let status = {
+        isGameActive: this.state.isGameActive,
+        message: "Player won"
+      };
+      this.props.isGameActive(status);
+      this.timeout = setTimeout(() => window.location.reload(), 5000);
+      return;
+    }
+    if (toGenerateRandomPoint) {
+      return this.createRandomDot(squares, setPath, () => {
+        return;
+      });
+    }
+    // });
   };
 
   createRandomDot = (squares, setPath, cb) => {
-    squares = this.state.squares;
+    // squares = this.state.squares;
     let i, j;
     while (true) {
       i = Math.floor(Math.random() * size);
@@ -237,7 +241,7 @@ class Board extends React.Component {
     return "" + nextX + nextY in this.state.setPath;
   };
 
-  changeGameState = ()=> {
+  changeGameState = () => {
     return this.setState({ isGameActive: false }, () => {
       let status = {
         isGameActive: this.state.isGameActive,
@@ -246,7 +250,7 @@ class Board extends React.Component {
       this.props.isGameActive(status);
       this.timeout = setTimeout(() => window.location.reload(), 5000);
     });
-  }
+  };
 
   render() {
     const squares = this.state.squares;
