@@ -4,7 +4,7 @@ import "./index.css";
 
 import Square from "./square";
 
-const size = 3;
+const size = 5;
 
 class Pair {
   constructor(x, y) {
@@ -87,7 +87,7 @@ class Board extends React.Component {
     const prevY = this.state.Y;
     const nextY = prevY + 1;
     const nextX = prevX;
-    if (!this.isGameOver(nextX, nextY)) {
+    if (!this.isGameOver(nextX, nextY) && this.state.isGameActive) {
       this.boundaryIsValid("Y", 1) &&
         this.setState(
           prevState => {
@@ -108,7 +108,7 @@ class Board extends React.Component {
     const nextY = prevY;
     const nextX = prevX + 1;
 
-    if (!this.isGameOver(nextX, nextY)) {
+    if (!this.isGameOver(nextX, nextY) && this.state.isGameActive) {
       this.boundaryIsValid("X", 1) &&
         this.setState(
           prevState => {
@@ -128,7 +128,7 @@ class Board extends React.Component {
     const prevY = this.state.Y;
     const nextY = prevY - 1;
     const nextX = prevX;
-    if (!this.isGameOver(nextX, nextY)) {
+    if (!this.isGameOver(nextX, nextY) && this.state.isGameActive) {
       this.boundaryIsValid("Y", -1) &&
         this.setState(
           prevState => {
@@ -150,7 +150,7 @@ class Board extends React.Component {
     const prevY = this.state.Y;
     const nextY = prevY;
     const nextX = prevX - 1;
-    if (!this.isGameOver(nextX, nextY)) {
+    if (!this.isGameOver(nextX, nextY) && this.state.isGameActive) {
       this.boundaryIsValid("X", -1) &&
         this.setState(
           prevState => {
@@ -188,7 +188,7 @@ class Board extends React.Component {
     // return this.setState({ squares, setPath, path, isGameActive }, () => {
     if (!isGameActive) {
       let status = {
-        isGameActive: this.state.isGameActive,
+        isGameActive: !this.state.isGameActive,
         message: "Player won"
       };
       this.props.isGameActive(status);
